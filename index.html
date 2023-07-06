@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>つくば vs. 水戸</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="水戸市が茨城県最大都市の地位を譲ってしまうのか！？"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="つくば vs. 水戸" />
+    <meta
+      name="twitter:description"
+      content="水戸市が茨城県最大都市の地位を譲ってしまうのか！？"
+    />
+    <meta
+      name="twitter:image"
+      content="https://random776.github.io/kacchan-uts2-22/pictures/mito.jpeg"
+    />
+    <link rel="stylesheet" href="./base.css" />
+  </head>
+  <body>
+    <h2>つくばの人口が水戸に追いつくまで</h2>
+    <div id="countdownArea" class="countdown">
+      <p>
+        <span>残り</span>
+        <span id="countdown-day" class="countdown-time"></span>日
+        <span id="countdown-hour" class="countdown-time"></span>時間
+        <span id="countdown-min" class="countdown-time"></span>分
+        <span id="countdown-sec" class="countdown-time"></span>秒
+      </p>
+      <p>
+        <span>＊ 今日</span>
+        <span id="today-year" class="countdown-time"></span>年
+        <span id="today-month" class="countdown-time"></span>月
+        <span id="today-date" class="countdown-time"></span>日 の推定人口
+      </p>
+      <table class="table">
+        <tr>
+          <td>つくば市</td>
+          <td id="tsukuba-pop" class="countdown-time"></td>
+          <td>人</td>
+        </tr>
+        <tr>
+          <td>水戸市</td>
+          <td id="mito-pop" class="countdown-time"></td>
+          <td>人</td>
+        </tr>
+        <tr>
+          <td>人口差</td>
+          <td id="dif-pop" class="countdown-time"></td>
+          <td>人</td>
+        </tr>
+      </table>
+    </div>
+    <p style="margin: 10px">
+      ＊
+      茨城県第2都市であるつくば市の人口が、県庁所在地水戸市の人口に追いつくまでの時間を、最小二乗法モデルで示したものです。
+    </p>
+    <p style="margin: 10px">
+      ＊ 統計は
+      <a
+        href="https://www.city.tsukuba.lg.jp/material/files/group/21/toukeitsukuba2022.pdf"
+        class="btn4"
+        >つくば市ホームページ</a
+      >
+      と
+      <a
+        href="https://www.city.mito.lg.jp/site/open-data/3992.html"
+        class="btn4"
+        >水戸市ホームページ</a
+      >
+      のデータを参照しました。
+    </p>
+    <p style="margin: 10px">
+      ＊ このサイトの制作者「かっちゃん」へのお問い合わせは
+      <a
+        href="https://random776.github.io/kacchan-uts2-22/contact.html"
+        class="btn4"
+      >
+        こちら
+      </a>
+      から。
+    </p>
+  </body>
+  <script>
+    const lsm = (coordinates) => {
+      const n = coordinates.length;
+      const sigX = coordinates.reduce((acc, c) => acc + c.x, 0);
+      const sigY = coordinates.reduce((acc, c) => acc + c.y, 0);
+      const sigXX = coordinates.reduce((acc, c) => acc + c.x * c.x, 0);
+      const sigXY = coordinates.reduce((acc, c) => acc + c.x * c.y, 0);
+      // a(傾き)を求める
+      const a = (n * sigXY - sigX * sigY) / (n * sigXX - Math.pow(sigX, 2));
+      // b(切片)を求める
+      const b = (sigXX * sigY - sigXY * sigX) / (n * sigXX - Math.pow(sigX, 2));
+      return { a, b };
+    };
+
+    const lsm2 = (coordinates2) => {
+      const n2 = coordinates2.length;
+      const sigX2 = coordinates2.reduce((acc, c) => acc + c.x, 0);
+      const sigY2 = coordinates2.reduce((acc, c) => acc + c.y, 0);
+      const sigXX2 = coordinates2.reduce((acc, c) => acc + c.x * c.x, 0);
+      const sigXY2 = coordinates2.reduce((acc, c) => acc + c.x * c.y, 0);
+      // a(傾き)を求める
+      const c =
+        (n2 * sigXY2 - sigX2 * sigY2) / (n2 * sigXX2 - Math.pow(sigX2, 2));
+      // b(切片)を求める
+      const d =
+        (sigXX2 * sigY2 - sigXY2 * sigX2) / (n2 * sigXX2 - Math.pow(sigX2, 2));
+      return { c, d };
+    };
+
+    const coordinates = [
+      //つくばの人口
+      { x: 2019 + 9 / 12, y: 236842 },
+      { x: 2020 + 9 / 12, y: 240383 },
+      { x: 2021 + 9 / 12, y: 245511 },
+      { x: 2022 + 9 / 12, y: 251208 },
+      { x: 2023 + 5 / 12, y: 255012 },
+    ];
+    const coordinates2 = [
+      //水戸の人口
+      { x: 2020 + 9 / 12, y: 270685 },
+      { x: 2021 + 9 / 12, y: 270450 },
+      { x: 2022 + 9 / 12, y: 269502 },
+      { x: 2023 + 6 / 12, y: 268379 },
+    ];
+    const { a, b } = lsm(coordinates);
+    const { c, d } = lsm2(coordinates2);
+
+    const getIntersectionLineSegments = function (line1, line2) {
+      const x0 = line1.start.x,
+        y0 = line1.start.y,
+        x1 = line1.end.x,
+        y1 = line1.end.y,
+        x2 = line2.start.x,
+        y2 = line2.start.y,
+        x3 = line2.end.x,
+        y3 = line2.end.y;
+
+      const a0 = (y1 - y0) / (x1 - x0),
+        a1 = (y3 - y2) / (x3 - x2);
+
+      const x = (a0 * x0 - y0 - a1 * x2 + y2) / (a0 - a1),
+        y = ((y1 - y0) / (x1 - x0)) * (x - x0) + y0;
+
+      if (Math.abs(a0) === Math.abs(a1)) return false;
+
+      if (
+        x > Math.max(x0, x1) ||
+        x > Math.max(x2, x3) ||
+        y > Math.max(y0, y1) ||
+        y > Math.max(y2, y3) ||
+        x < Math.min(x0, x1) ||
+        x < Math.min(x2, x3) ||
+        x < Math.min(x0, x1) ||
+        y < Math.min(y2, y3)
+      )
+        return false;
+
+      return { x: x, y: y };
+    };
+    // 直線1
+    const line1 = {
+      start: { x: 2020, y: a * 2020 + b }, // 始点
+      end: { x: 2028, y: a * 2028 + b }, // 終点
+    };
+    console.log({ a, b });
+    console.log({ c, d });
+
+    // 直線2
+    const line2 = {
+      start: { x: 2020, y: c * 2020 + d }, // 始点
+      end: { x: 2028, y: c * 2028 + d }, // 終点
+    };
+
+    const point = getIntersectionLineSegments(line1, line2);
+
+    let countdown = setInterval(function () {
+      const now = new Date(); //今の日時
+      const getYear = now.getFullYear();
+      const nowYear = new Date(`${getYear}/1/1 0:00:00`);
+      const nextYear = new Date(`${getYear + 1}/1/1 0:00:00`);
+      const remainTime = nextYear.getTime() - now.getTime(); //差分を取る（ミリ秒で返ってくる）
+      const allTime = nextYear.getTime() - nowYear.getTime();
+      const percentage = 1 - remainTime / allTime;
+      const n = 4; // 小数点第n位まで残す
+      const tsukubaPop =
+        Math.floor((a * (getYear + percentage) + b) * Math.pow(10, n)) /
+        Math.pow(10, n);
+      const mitoPop =
+        Math.floor((c * (getYear + percentage) + d) * Math.pow(10, n)) /
+        Math.pow(10, n);
+      const difPop =
+        Math.floor(
+          ((c - a) * (getYear + percentage) + (d - b)) * Math.pow(10, n)
+        ) / Math.pow(10, n);
+
+      const tsukubaTime = Math.floor(
+        (point.x - 1970) * 365.25 * 24 * 60 * 60 * 1000
+      );
+      const target = new Date();
+      const getFullYear = target.getFullYear();
+      const getMonth = target.getMonth() + 1;
+      const getDay = target.getDate();
+      const getMiliSeconds = tsukubaTime - target.getTime();
+      target.setSeconds(target.getSeconds() + getMiliSeconds / 1000);
+
+      const remain_time = target - now; //差分を取る（ミリ秒で返ってくる）
+      if (remain_time < 0) {
+        return false;
+      }
+      const difDay = Math.floor(remain_time / 1000 / 60 / 60 / 24);
+      const difHour = Math.floor(remain_time / 1000 / 60 / 60) % 24;
+      const difMin = Math.floor(remain_time / 1000 / 60) % 60;
+      const difSec = Math.floor(remain_time / 1000) % 60;
+      document.getElementById("countdown-day").textContent = difDay;
+      document.getElementById("countdown-hour").textContent = difHour;
+      document.getElementById("countdown-min").textContent = difMin;
+      document.getElementById("countdown-sec").textContent = difSec;
+      document.getElementById("today-year").textContent = getFullYear;
+      document.getElementById("today-month").textContent = getMonth;
+      document.getElementById("today-date").textContent = getDay;
+      document.getElementById("tsukuba-pop").textContent = tsukubaPop;
+      document.getElementById("mito-pop").textContent = mitoPop;
+      document.getElementById("dif-pop").textContent = difPop;
+    }, 1000);
+  </script>
+</html>
